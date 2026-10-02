@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>@paddle/paddle-js — Preview</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --card: #1a1d27;
+      --border: #2a2d3a;
+      --text: #e4e4e7;
+      --muted: #9ca3af;
+      --accent: #4f46e5;
+      --green: #22c55e;
+      --red: #ef4444;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    h1 { font-size: 1.75rem; margin-bottom: 0.5rem; }
+    .subtitle { color: var(--muted); margin-bottom: 2rem; }
+    .grid { display: grid; gap: 1rem; max-width: 800px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .card h2 { font-size: 1.1rem; margin-bottom: 0.75rem; }
+    .card p { color: var(--muted); line-height: 1.6; margin-bottom: 0.75rem; }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+    }
+    .status.ok { background: rgba(34,197,94,0.15); color: var(--green); }
+    .status.err { background: rgba(239,68,68,0.15); color: var(--red); }
+    .status .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+    code {
+      font-family: 'SF Mono', Monaco, Consolas, monospace;
+      font-size: 0.85rem;
+      background: rgba(255,255,255,0.05);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+    }
+    pre {
+      font-family: 'SF Mono', Monaco, Consolas, monospace;
+      font-size: 0.8rem;
+      background: rgba(0,0,0,0.3);
+      padding: 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      line-height: 1.5;
+      color: #a5b4fc;
+    }
+    .btn {
+      display: inline-block;
+      padding: 0.5rem 1.25rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <h1>@paddle/paddle-js</h1>
+  <p class="subtitle">TypeScript wrapper for Paddle.js — library preview &amp; build verification</p>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Build Status</h2>
+      <p>The library was compiled with Rollup. The ESM bundle is loaded on this page.</p>
+      <div id="build-status" class="status err"><span class="dot"></span> Checking…</div>
+    </div>
+
+    <div class="card">
+      <h2>Exports</h2>
+      <p>Functions and constants exported from <code>src/index.ts</code>:</p>
+      <pre id="exports">Loading…</pre>
+    </div>
+
+    <div class="card">
+      <h2>initializePaddle()</h2>
+      <p>Calls <code>initializePaddle()</code> from the built bundle. Paddle.js loads from the Paddle CDN at runtime.</p>
+      <button class="btn" id="init-btn">Run initializePaddle()</button>
+      <div id="init-result" style="margin-top:0.75rem;"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    const buildStatus = document.getElementById('build-status');
+    const exportsPre = document.getElementById('exports');
+    const initBtn = document.getElementById('init-btn');
+    const initResult = document.getElementById('init-result');
+
+    try {
+      const mod = await import('/dist/index.esm.js');
+
+      const exports = Object.keys(mod).sort();
+      exportsPre.textContent = exports.join(', ');
+
+      const hasInit = typeof mod.initializePaddle === 'function';
+      const hasGetInstance = typeof mod.getPaddleInstance === 'function';
+
+      if (hasInit && hasGetInstance) {
+        buildStatus.className = 'status ok';
+        buildStatus.innerHTML = '<span class="dot"></span> Build OK — ' + exports.length + ' exports loaded';
+      } else {
+        buildStatus.className = 'status err';
+        buildStatus.innerHTML = '<span class="dot"></span> Missing expected exports';
+      }
+
+      initBtn.disabled = false;
+      initBtn.addEventListener('click', async () => {
+        initBtn.disabled = true;
+        initResult.innerHTML = '<span style="color:var(--muted)">Calling initializePaddle()…</span>';
+        try {
+          const paddle = await mod.initializePaddle({ environment: 'sandbox' });
+          if (paddle) {
+            initResult.innerHTML = '<span class="status ok"><span class="dot"></span> Paddle instance loaded — version ' + (paddle.Version || 'unknown') + '</span>';
+          } else {
+            initResult.innerHTML = '<span class="status err"><span class="dot"></span> initializePaddle returned undefined (SSR or load failure)</span>';
+          }
+        } catch (e) {
+          initResult.innerHTML = '<span class="status err"><span class="dot"></span> ' + e.message + '</span>';
+        }
+        initBtn.disabled = false;
+      });
+    } catch (e) {
+      buildStatus.className = 'status err';
+      buildStatus.innerHTML = '<span class="dot"></span> Build failed: ' + e.message;
+      exportsPre.textContent = e.stack || e.message;
+    }
+  </script>
+</body>
+</html>
