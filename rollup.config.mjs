@@ -6,7 +6,7 @@ import pkg from './package.json' with { type: 'json' };
 
 const PLUGINS = [
   ts({
-    tsconfigOverride: { exclude: ['**/*.test.ts', 'jest.config.ts'] },
+    tsconfigOverride: { exclude: ['**/*.test.ts', 'jest.config.ts', 'demo/**'] },
   }),
   babel({
     extensions: ['.ts', '.js', '.tsx', '.jsx'],

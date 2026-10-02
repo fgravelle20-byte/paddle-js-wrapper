@@ -29,5 +29,5 @@
     "noPropertyAccessFromIndexSignature": true,
     "skipLibCheck": true
   },
-  "exclude": ["jest.config.ts"]
+  "exclude": ["jest.config.ts", "demo"]
 }
