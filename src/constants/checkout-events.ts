@@ -57,6 +57,7 @@ export enum CheckoutEventsStatus {
   READY = 'ready',
   COMPLETED = 'completed',
   BILLED = 'billed',
+  PAID = 'paid',
   canceled = 'canceled',
   PAST_DUE = 'past_due',
 }
