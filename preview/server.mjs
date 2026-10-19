@@ -21,6 +21,7 @@ const server = http.createServer(async (req, res) => {
   let url = req.url.split('?')[0];
   console.log(`[${new Date().toISOString()}] ${req.method} ${url}`);
   if (url === '/') url = '/preview/index.html';
+  if (url === '/favicon.ico') { res.writeHead(204); res.end(); return; }
 
   // Serve preview/ and dist/ directories
   const filePath = join(ROOT, url);
